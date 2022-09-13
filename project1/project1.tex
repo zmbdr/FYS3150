@@ -81,7 +81,7 @@
 
 
 \maketitle   
-\textit{List a link to your github repository here!}
+\textit{Github browser-link to this repository: https://github.com/zmbdr/FYS3150/tree/main/project1}
     
 \section*{Problem 1}
 Given
@@ -108,8 +108,9 @@ The above is valid for $x \in [0, 1]$, and the boundary conditions $u(0) = u(1) 
 exact solution to the given problem.
 %
 \section*{Problem 2}
-A simple c++ script to dump $u(x_i)$ for $x = ih$ is supplied in the file \texttt{main\_2.cpp}, and is plotted in the file 
-\texttt{plot\_2.py}. 
+A simple c++ script to dump $u(x_i)$ for $x = ih$ is supplied in the file \texttt{main\_2.cpp}. 
+The plot in Figure~\ref{fig:exact} is generated  by the file \texttt{plot\_2.py}. 
+
 \begin{figure}%[h!]
     \centering %Centers the figure
     \includegraphics{figs/problem_2.pdf} %Imports the figure.
@@ -130,7 +131,7 @@ Thus, from the original Poisson equation, we can write
 \begin{eqnarray*}
      - \frac{u_{i+1} - 2 u_i + u_{i-1}}{h^2} + \mbox{higher order terms}  & = & f_i, \quad i = 1,\ldots N-1. \\
 \end{eqnarray*}
-This leads to the simple discrete approxmation $v_i$:
+This leads to the simple discrete approximation $v_i$:
 \begin{equation*}
     - (v_{i+1} - 2 v_i + v_{i-1})  = h^2 f_i, \quad i = 1,\ldots N-1. 
 \end{equation*}
@@ -138,35 +139,111 @@ Here, $v_0 = u_0 = u(0) = 0$, $v_N = u_N = u(1) = 0$, and $h = 1/N$. This is the
 and if this is solvable (it is!), we have found approximation to $u(x)$ on the discrete grid $x_i$.
 %
 \section*{Problem 4}
-The discrete equation above
+The discrete equation above can be written as follows for $i = 2,\ldots,N-2$:
+\begin{equation*}
+    \begin{bmatrix}
+        -1 & 2 & -1
+    \end{bmatrix} 
+    \begin{bmatrix}
+        v_{i-1}\\v_{i}\\v_{i+1}
+    \end{bmatrix}
+    = h^2 f_i.
+\end{equation*}
+However, we need to take care for the cases $i=1$ and $i=N-1$:
 
-Next up is a table, created using the \texttt{table} and \texttt{tabular} environments. We refer to it by table \ref{tab:output_table}.
-\begin{table}%[h!]
-    \centering
-    \begin{tabular}{c@{\hspace{1cm}} c}
-        \hline
-        Number of points & Output \\
-        \hline
-        10 &  0.3086\\
-        100 &  0.2550\\
-        \hline
-    \end{tabular}\caption{Write a descriptive caption here, explaining the content of your table.}\label{tab:output_table}
-\end{table}
+\begin{equation*}
+    \begin{bmatrix}
+    2 & -1
+    \end{bmatrix} 
+    \begin{bmatrix}
+        v_{i}\\v_{i+1}
+    \end{bmatrix} - v_{i-1}
+    = h^2 f_i, \quad\text{for $i=1$},
+\end{equation*}
+and,
+\begin{equation*}
+    \begin{bmatrix}
+    -1 & 2
+    \end{bmatrix} 
+    \begin{bmatrix}
+        v_{i-1}\\v_{i}
+    \end{bmatrix} - v_{N+1}
+    = h^2 f_i, \quad\text{for $i=N-1$}.
+\end{equation*}
+Stacking these three equations in matrix form, we get
+\begin{equation*}
+    \begin{bmatrix}
+    2   & -1 & \dots & 0 & 0 \\
+    -1  & 2 & -1    & \dots & 0 \\
+    0   & -1 &\ddots&\ddots&0\\
+    \vdots& \ddots & \ddots & \ddots & 0\\
+    0 & \dots& \ddots &  -1 & 2
+    \end{bmatrix}_{(N-1)\times(N-1)}
+    \begin{bmatrix}
+        v_{1}\\\vdots\\\vdots\\\vdots\\v_{N-1}
+    \end{bmatrix}_{(N-1)\times 1} 
+    - 
+    \begin{bmatrix}
+        v_{0}\\0\\\vdots\\0 \\v_{N}
+    \end{bmatrix}_{(N-1)\times 1}
+    = h^2    
+    \begin{bmatrix}
+        f_{1}\\ \vdots\\\vdots\\\vdots \\f_{N-1}
+    \end{bmatrix}_{(N-1)\times 1}.
+\end{equation*}
 
-Finally, we can list algorithms by using the \texttt{algorithm} environment, as demonstrated here for algorithm \ref{algo:midpoint_rule}.
+This is what we want; we get 
+\begin{equation}
+    \mathbf A \vec v = \vec g, \label{eq:Avg}
+\end{equation}
+where 
+\begin{equation}
+    g_i = 
+    \begin{cases}
+        h^2 f_i + v_0 & \text{for $i = 1$}\\
+        h^2 f_i       & \text{for $i = 2\ldots N-2$}\\
+        h^2 f_i + v_N & \text{for $i = N-1$}
+    \end{cases}
+\end{equation}
+%
+%
+\section*{Problem 5}
+\subsection{Relation $n$ to $m$}
+Now, we let $\vec{v^*}$ be a complete solution of the discretized Poisson equation. If we employ $N$ intervals, the full solution need to be specified for $N+1$ values. Hence, if 
+$\vec{v^*}$ has length $m$, it is clear that $m=N+1$. As described under Problem 4, the matrix $\mathbf A$ has dimensions $(N-1)\times{N-1}$, which is $n\times n$. Thus, $n = m+2$.
+\subsection{Relation $\vec{v^*}$  to $\vec{v}$}
+From the discussion  above, it appears that solving~\ref{eq:Avg} gives the \emph{interior solution} of the discrete Poisson equation, i.e. not including the boundary conditions.  
+
+\section*{Problem 6}
+OK, now $\mathbf A$ is an $n\times n$ tridiagonal matrix, and we are interested in solving $\mathbf A \vec v = \vec g$ for $\vec v$.
+\\
+\\
+\textbf{a) General algorithm}
+\\
+A general algorithm follows from standard Gaussian elimination forward for eliminating the subdiagonal $a$, and then solving backwards to find $v$.
+This is summarized  here for algorithm \ref{algo:thomas}.
 \begin{algorithm}[H]
-    \caption{Some algorithm}\label{algo:midpoint_rule}
+    \caption{Thomas algorithm (Gaussian elimination applied to tridiagonal matrices) }\label{algo:thomas}
     \begin{algorithmic}
-        \State Some maths, e.g $f(x) = x^2$.  \Comment{Here's a comment}
-        \For{$i = 0, 1, ..., n-1$}
-        \State Do something here 
+        \Require{$a = \left[a_2, \ldots a_n\right], b = \left[b_1, \ldots b_n\right], c = \left[c_1, \ldots c_{n-1}\right], g = \left[g_1, \ldots g_{n}\right]$ }
+        \State Allocate memory $\tilde b = \left[\tilde b_1, \ldots \tilde b_n\right], \tilde g = \left[\tilde g_1, \ldots \tilde g_{n}\right], v = \left[v_1, \ldots v_n\right] $
+        \State Initialize new diagonal: $\tilde b_1 = b_1$
+        \For{$i =  2, ..., n$} \Comment Repeated $n-1$
+            %\State $\tilde a_i = a_i - \frac{a_i}{\tilde b_{i-1}} b_{i-1}$ \Comment This is all zero and included for clarity
+            \State $\tilde b_i = b_i - \frac{a_i}{\tilde b_{i-1}} c_{i}$ \Comment FLOP: 4
+            \State $\tilde g_i = g_i - \frac{a_i}{\tilde b_{i-1}} \tilde g_{i}$ \Comment FLOP: 4
         \EndFor
-        \While{Some condition}
-        \State Do something more here 
-        \EndWhile
-        \State Maybe even some more math here, e.g $\int_0^1 f(x) \dd x$
+        \State $v_n = \frac{\tilde g_n}{\tilde b_{n}}$              
+        \For{$i =  n-1, ..., 1$} \Comment Repeated $n-1$
+            \State $v_i = \frac{\tilde g_i - c_i v_{i+1}}{\tilde b_{i}} $ \Comment FLOP: 4
+        \EndFor
+        \Return $v$        
     \end{algorithmic}
 \end{algorithm}
-   
+\textbf{b) Number of FLOPs}
+\\
+From the algorithm above, we see that the number of FLOPS equals $(n-1)\times(4 + 4) + 1 + (n-1)\times 4 = 12 \times (n-1) + 1$. In other words, solving a triangular system of $n$ linear equations is requires $\approx 12 n$ FLOPs.
+
+
 \end{document}
 
